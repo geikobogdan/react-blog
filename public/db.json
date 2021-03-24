@@ -1,0 +1,22 @@
+{
+  "users": [
+    {
+      "username": "bodya12001",
+      "firstName": "Bogdan",
+      "lastName": "Geiko",
+      "email": "geikobogdanv@gmail.com",
+      "password": "Parol.123",
+      "id": 1
+    },
+    
+    {
+      "username": "yura22002",
+      "firstName": "Yuriy",
+      "lastName": "Sobchak",
+      "email": "sobchakyura@gmail.com",
+      "password": "prlCV.32",
+      "id": 2
+    }
+   
+  ]
+}
