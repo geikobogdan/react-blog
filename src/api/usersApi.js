@@ -7,5 +7,5 @@ export const UsersApi = ()=>{
 };
 
 export const SignUpUser=(payload)=> {
-  return axios.post("/users",payload).then(({ data }) => data);
+  return axios.post("/users",payload);
  }
