@@ -9,7 +9,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 import { Alert } from "@material-ui/lab";
-
+import { useHistory } from "react-router-dom";
 import Snackbar from "@material-ui/core/Snackbar";
 
 import { Link } from "react-router-dom";
@@ -17,18 +17,30 @@ import { useStyles } from "../themes";
 
 import { Formik } from "formik";
 import * as yup from "yup";
+import {
+  signUpUser,
+  fetchAddUsers,
+  isAuthorized,
+} from "../../redux/actions/auth";
+import { useDispatch, useSelector } from "react-redux";
+
+
 
 export default function SignUp() {
-  const arr = ["bodya12001", "yura22002"];
+  const dispatch = useDispatch();
+  const { users } = useSelector(({ auth }) => auth);
+  const history = useHistory();
+  const usersNames = users.map((user) => user.username);
+  const { authorized } = useSelector(({ auth }) => auth);
 
-  const [auth, setAuth] = React.useState(false);
+  const [submit, setSubmit] = React.useState(false);
   const validationsSchema = yup.object().shape({
     username: yup
       .string()
       .typeError("Повинно бути стрічкою")
       .required("Обов'язкове поле")
       .test("validateUsername", "", function (value) {
-        if (arr.includes(value)) {
+        if (usersNames.includes(value)) {
           return this.createError({
             message: `Username повинен бути унікальним`,
           });
@@ -63,6 +75,9 @@ export default function SignUp() {
   });
 
   const classes = useStyles();
+  React.useEffect(() => {
+    dispatch(fetchAddUsers());
+  }, [dispatch]);
 
   return (
     <Container component="main" maxWidth="xs">
@@ -86,9 +101,15 @@ export default function SignUp() {
           }}
           validateOnBlur
           onSubmit={(values) => {
-            console.log(values);
-
-            setAuth(true);
+            setSubmit(true);
+           
+            const activeUser =
+            values.firstName  + " " +  values.lastName;
+            dispatch(isAuthorized(true, activeUser));
+            delete values["confirmPassword"];
+            values.jwt = Math.random().toString(36).substr(2);
+            dispatch(signUpUser(values));
+            setTimeout(() => history.push("/home"), 1500);
           }}
           validationSchema={validationsSchema}
         >
@@ -107,7 +128,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.username}
-                disabled={auth}
+                disabled={authorized}
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -126,7 +147,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.firstName}
-                disabled={auth}
+                disabled={authorized}
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -143,7 +164,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.lastName}
-                disabled={auth}
+                disabled={authorized}
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -160,7 +181,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.email}
-                disabled={auth}
+                disabled={authorized}
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -178,7 +199,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.password}
-                disabled={auth}
+                disabled={authorized}
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -197,7 +218,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.confirmPassword}
-                disabled={auth}
+                disabled={authorized}
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -213,7 +234,7 @@ export default function SignUp() {
               )}
 
               <Button
-                disabled={!isValid || !dirty}
+                disabled={!isValid || !dirty || submit}
                 type="submit"
                 fullWidth
                 variant="contained"
@@ -222,6 +243,7 @@ export default function SignUp() {
               >
                 Sign Up
               </Button>
+
               <Grid container justify="flex-end">
                 <Grid item>
                   <Link className={classes.link} to="/signIn" variant="body2">
@@ -233,7 +255,7 @@ export default function SignUp() {
           )}
         </Formik>
       </div>
-      {auth && (
+      {authorized && (
         <Snackbar
           open={true}
           anchorOrigin={{
